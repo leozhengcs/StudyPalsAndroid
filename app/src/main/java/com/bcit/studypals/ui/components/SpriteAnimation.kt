@@ -8,6 +8,20 @@ import android.graphics.Paint
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.os.Handler
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import com.bcit.studypals.R
 
 class AnimatedSpriteView(context: Context) : SurfaceView(context), Runnable {
@@ -73,4 +87,54 @@ class AnimatedSpriteView(context: Context) : SurfaceView(context), Runnable {
         thread = Thread(this)
         thread?.start()
     }
+}
+
+@Composable
+fun AnimatedSprite(
+    spriteSheetResId: Int,
+    frameWidth: Int,
+    frameHeight: Int,
+    frameCount: Int,
+    durationMillis: Int,
+    startRow: Int = 0, // Specify the row you want to start from
+    modifier: Modifier = Modifier
+) {
+    // Load the sprite sheet as a Bitmap
+    val options = BitmapFactory.Options().apply {
+        inScaled = false // Disable automatic scaling
+    }
+    val spriteSheetBitmap = BitmapFactory.decodeResource(LocalContext.current.resources, spriteSheetResId, options)
+
+    // Calculate the number of frames per row in the sprite sheet
+    val framesPerRow = spriteSheetBitmap.width / frameWidth
+
+    // Pre-calculate and cache frames
+    val frames = remember(spriteSheetBitmap, frameWidth, frameHeight, frameCount, startRow) {
+        (0 until frameCount).map { frameIndex ->
+            val srcX = (frameIndex % framesPerRow) * frameWidth
+            val srcY = (startRow * frameHeight) + (frameIndex / framesPerRow) * frameHeight
+            Bitmap.createBitmap(spriteSheetBitmap, srcX, srcY, frameWidth, frameHeight).asImageBitmap()
+        }
+    }
+
+    // Animate through the preloaded frames
+    val transition = rememberInfiniteTransition(label = "Sprite Animation")
+    val currentFrame: androidx.compose.runtime.State<Int> = transition.animateValue(
+        initialValue = 0,
+        targetValue = frameCount - 1,
+        typeConverter = Int.VectorConverter,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = durationMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "CurrentFrame"
+    )
+
+    // Render the current frame
+    Image(
+        bitmap = frames[currentFrame.value],
+        contentDescription = "Animated Sprite",
+        modifier = modifier,
+        contentScale = ContentScale.Fit
+    )
 }

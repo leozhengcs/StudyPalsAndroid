@@ -13,6 +13,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +30,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bcit.studypals.ui.Background
+import com.bcit.studypals.ui.components.AnimatedSprite
 import com.bcit.studypals.ui.state.UserState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -57,8 +60,11 @@ fun Home(navController: NavController, background: Background) {
 
     val userState = ViewModelProvider(navController.getBackStackEntry("home")).get(UserState::class.java)
     val isStudying by userState.studying.observeAsState(initial = false)
+    val startRow by remember {
+        mutableIntStateOf(0)
+    }
 
-    // Ensure the user is logged in
+    // TODO: Refactor to work with the Firebase State
     if (userId != null) {
         db.collection("users").document(userId)
             .get()
@@ -146,6 +152,7 @@ fun Home(navController: NavController, background: Background) {
                     frameWidth = 320, // Replace with frame width in px
                     frameHeight = 320, // Replace with frame height in px
                     frameCount = 4,  // Replace with the total number of frames
+                    startRow = if (isStudying) 1 else 0,
                     durationMillis = 1000, // Frame duration
                     modifier = Modifier
                         .size(160.dp)
@@ -171,52 +178,6 @@ fun Home(navController: NavController, background: Background) {
         }
     }
 
-}
-
-@Composable
-fun AnimatedSprite(
-    spriteSheetResId: Int,
-    frameWidth: Int,
-    frameHeight: Int,
-    frameCount: Int,
-    durationMillis: Int,
-    modifier: Modifier = Modifier
-) {
-    // Load the sprite sheet as a Bitmap
-    val options = BitmapFactory.Options().apply {
-        inScaled = false // Disable automatic scaling
-    }
-    val spriteSheetBitmap = BitmapFactory.decodeResource(LocalContext.current.resources, spriteSheetResId, options)
-
-    // Pre-calculate and cache frames
-    val frames = remember {
-        (0 until frameCount).map { frameIndex ->
-            val srcX = (frameIndex % (spriteSheetBitmap.width / frameWidth)) * frameWidth
-            val srcY = (frameIndex / (spriteSheetBitmap.width / frameWidth)) * frameHeight
-            Bitmap.createBitmap(spriteSheetBitmap, srcX, srcY, frameWidth, frameHeight).asImageBitmap()
-        }
-    }
-
-    // Animate through the preloaded frames
-    val transition = rememberInfiniteTransition(label = "Sprite Animation")
-    val currentFrame: State<Int> = transition.animateValue(
-        initialValue = 0,
-        targetValue = frameCount - 1,
-        typeConverter = Int.VectorConverter,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = durationMillis, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "CurrentFrame"
-    )
-
-    // Render the current frame
-    Image(
-        bitmap = frames[currentFrame.value],
-        contentDescription = "Animated Sprite",
-        modifier = modifier,
-        contentScale = ContentScale.Fit
-    )
 }
 
 @Composable

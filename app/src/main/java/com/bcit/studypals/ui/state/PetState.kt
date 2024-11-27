@@ -11,3 +11,4 @@ data class PetState(
     val frames: Int,
     val sizePerFrame: Int = 320,
 )
+
