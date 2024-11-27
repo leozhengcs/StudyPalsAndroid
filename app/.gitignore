@@ -1,2 +1,4 @@
 /build
 google-services.json
+/local.properties
+src/main/res/values/strings.xml
