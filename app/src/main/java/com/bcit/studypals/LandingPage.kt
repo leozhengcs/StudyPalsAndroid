@@ -13,28 +13,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bcit.studypals.ui.state.FirebaseState
-import com.bcit.studypals.utils.ResourceProvider
+import com.bcit.studypals.data.state.FirebaseState
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun Landing(navController: NavController) {
     val firebaseVM: FirebaseState = viewModel()
 
-    var isSignedIn = firebaseVM.isSignedIn.collectAsState().value
-    var userName = firebaseVM.userName.collectAsState().value
+    val isSignedIn = firebaseVM.isSignedIn.collectAsState().value
+    val userName = firebaseVM.userName.collectAsState().value
 
     // Remember launcher for Google Sign-In result
     val googleSignInLauncher = rememberLauncherForActivityResult(

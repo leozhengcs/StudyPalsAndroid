@@ -11,6 +11,5 @@ class App : Application() {
 
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
-
     }
 }

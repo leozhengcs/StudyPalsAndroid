@@ -1,6 +1,5 @@
 package com.bcit.studypals
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
@@ -9,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bcit.studypals.ui.state.FirebaseState
+import com.bcit.studypals.data.state.FirebaseState
 
 @Composable
 fun ProfilePage(navController: NavController) {

@@ -29,7 +29,8 @@ class AnimatedSpriteView(context: Context) : SurfaceView(context), Runnable {
     private var thread: Thread? = null
     private var isPlaying = false
     private val paint = Paint()
-    private lateinit var spriteSheet: Bitmap
+    private var spriteSheet: Bitmap =
+        BitmapFactory.decodeResource(resources, R.drawable.pet_fox) // Load sprite sheet
 
     // Sprite properties
     private val frameWidth = 32  // Width of a single frame
@@ -39,10 +40,6 @@ class AnimatedSpriteView(context: Context) : SurfaceView(context), Runnable {
     private val frameDuration = 200L // Duration of each frame in milliseconds
 
     private var lastFrameChangeTime = System.currentTimeMillis()
-
-    init {
-        spriteSheet = BitmapFactory.decodeResource(resources, R.drawable.pet_fox) // Load sprite sheet
-    }
 
     override fun run() {
         while (isPlaying) {

@@ -1,37 +1,30 @@
 package com.bcit.studypals
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bcit.studypals.ui.Background
 import com.bcit.studypals.ui.components.AnimatedSprite
-import com.bcit.studypals.ui.state.UserState
+import com.bcit.studypals.data.state.UserState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -58,11 +51,9 @@ fun Home(navController: NavController, background: Background) {
 
     val db = FirebaseFirestore.getInstance()
 
-    val userState = ViewModelProvider(navController.getBackStackEntry("home")).get(UserState::class.java)
+    val userState = ViewModelProvider(navController.getBackStackEntry("home"))[UserState::class.java]
     val isStudying by userState.studying.observeAsState(initial = false)
-    val startRow by remember {
-        mutableIntStateOf(0)
-    }
+    val scrollState = rememberScrollState()
 
     // TODO: Refactor to work with the Firebase State
     if (userId != null) {
@@ -77,7 +68,8 @@ fun Home(navController: NavController, background: Background) {
                     val name = document.getString("name")
                     val email = document.getString("email")
                     val points = document.getLong("points") ?: 0
-//                    val currentPet = document.getString("current_pet")
+                    val currentPet = document.getString("current_pet") ?: "fox"
+                    val studyHours = document.getLong("study_hours") ?: 0
 
                     Log.d("Firestore", "Name: $name, Email: $email, Points: $points")
                 } else {
@@ -92,8 +84,11 @@ fun Home(navController: NavController, background: Background) {
     }
 
     Column (
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
     ) {
+        // The display of the pet and background
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,9 +155,10 @@ fun Home(navController: NavController, background: Background) {
             }
 
         }
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
+        Spacer(modifier = Modifier.height(75.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
             Button(
                 onClick = {
